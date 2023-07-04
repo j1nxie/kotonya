@@ -44,14 +44,11 @@ pub async fn run(
     command: &ApplicationCommandInteraction,
     ctx: &Context,
 ) -> Result<(), SerenityError> {
-    let options_length = &command.data.options.get(0).unwrap().options.len();
+    let params = &command.data.options.get(0).unwrap();
+    let params_length = params.options.len();
 
-    if *options_length == 1 {
-        let option = &command
-            .data
-            .options
-            .get(0)
-            .unwrap()
+    if params_length == 1 {
+        let option = params
             .options
             .get(0)
             .expect("expected character ID")
@@ -98,11 +95,7 @@ pub async fn run(
             Ok(())
         }
     } else {
-        let options = &command
-            .data
-            .options
-            .get(0)
-            .unwrap()
+        let options = params
             .options
             .get(0..2)
             .expect("expected character name and world name");
