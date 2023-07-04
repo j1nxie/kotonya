@@ -39,6 +39,93 @@ async fn get_character_by_name(
     get_character_by_id(api, &id.to_string()).await
 }
 
+async fn return_embed(
+    method: &str,
+    response: Result<CharacterResult, xivapi::error::Error>,
+    command: &ApplicationCommandInteraction,
+    ctx: &Context,
+) -> Result<(), SerenityError> {
+    match response {
+        Ok(r) => {
+            let character = r.character.unwrap();
+            command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message| {
+                            message.embed(|e| {
+                                e.title(character.name)
+                                    .description(format!(
+                                        "Lodestone ID: `{:?}`\n```{}```",
+                                        character.id.0, character.bio
+                                    ))
+                                    .url(format!(
+                                        "https://na.finalfantasyxiv.com/lodestone/character/{:?}",
+                                        character.id.0
+                                    ))
+                                    .thumbnail(character.avatar)
+                                    .field(
+                                        "job",
+                                        character.active_class_job.unlocked_state.name,
+                                        true,
+                                    )
+                                    .field("", "", true)
+                                    .field(
+                                        "race | tribe | gender",
+                                        format!(
+                                            "{:?}\n{:?} | {:?}",
+                                            character.race, character.tribe, character.gender
+                                        ),
+                                        true,
+                                    )
+                                    .field("city-state", format!("{:?}", character.town), true)
+                                    .field("", "", true)
+                                    .field(
+                                        "guardian",
+                                        format!("{:?}", character.guardian_deity),
+                                        true,
+                                    )
+                                    .field(
+                                        "server",
+                                        format!("{} | {}", character.dc, character.world),
+                                        true,
+                                    )
+                                    .field("", "", true)
+                                    .field(
+                                        "free company",
+                                        if let Some(fc_name) = character.free_company_name {
+                                            fc_name
+                                        } else {
+                                            String::from("None")
+                                        },
+                                        true,
+                                    )
+                                    .field("nameday", character.nameday, false)
+                            })
+                        })
+                })
+                .await
+        }
+        Err(_) => {
+            command
+                .create_interaction_response(&ctx.http, |response| {
+                    response
+                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                        .interaction_response_data(|message| {
+                            message.embed(|e| {
+                                e.title("couldn't find your character!")
+                                    .description(format!(
+                                    "Kotonya couldn't find the character with the given {}, nya!",
+                                    method
+                                ))
+                            })
+                        })
+                })
+                .await
+        }
+    }
+}
+
 pub async fn run(
     api: &XivApi,
     command: &ApplicationCommandInteraction,
@@ -59,38 +146,7 @@ pub async fn run(
         if let CommandDataOptionValue::String(id) = option {
             let response = get_character_by_id(api, id).await;
 
-            match response {
-                Ok(r) => {
-                    let character = r.character.unwrap();
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::ChannelMessageWithSource)
-                                .interaction_response_data(|message| {
-                                    message.embed(|e| e.title(character.name))
-                                })
-                        })
-                        .await
-                }
-                Err(_) => {
-                    command
-                        .create_interaction_response(&ctx.http, |response| {
-                            response
-                                .kind(InteractionResponseType::ChannelMessageWithSource)
-                                .interaction_response_data(|message| {
-                                    message.embed(|e| {
-                                        e.title("couldn't find your character!").description(
-                                            format!(
-                                        "Kotonya couldn't find the character with the ID {}, nya!",
-                                        id
-                                    ),
-                                        )
-                                    })
-                                })
-                        })
-                        .await
-                }
-            }
+            return_embed("ID", response, command, ctx).await
         } else {
             Ok(())
         }
@@ -122,34 +178,8 @@ pub async fn run(
             match world {
                 Ok(w) => {
                     let response = get_character_by_name(api, name, w).await;
-                    match response {
-                    Ok(r) => {
-                        let character = r.character.unwrap();
-                        command
-                            .create_interaction_response(&ctx.http, |response| {
-                                response
-                                    .kind(InteractionResponseType::ChannelMessageWithSource)
-                                    .interaction_response_data(|message| {
-                                        message.embed(|e| e.title(character.name))
-                                    })
-                            })
-                            .await
-                    }
-                    Err(_) => {
-                        command
-                            .create_interaction_response(&ctx.http, |response| {
-                                response
-                                    .kind(InteractionResponseType::ChannelMessageWithSource)
-                                    .interaction_response_data(|message| {
-                                        message.embed(|e| {
-                                            e.title("couldn't find your character!")
-                                            .description(format!("Kotonya couldn't find the character with the name {}, nya!", name))
-                                        })
-                                    })
-                            })
-                            .await
-                        }
-                    }
+
+                    return_embed("name", response, command, ctx).await
                 }
                 Err(_) => {
                     command
