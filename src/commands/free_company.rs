@@ -35,7 +35,7 @@ async fn return_embed(
                         .kind(InteractionResponseType::ChannelMessageWithSource)
                         .interaction_response_data(|message| {
                             message.embed(|e| {
-                                e.title(fc.name)
+                                e.title(format!("{} «{}»", fc.name, fc.tag))
                                     .description(format!(
                                         "Lodestone ID: `{}`\n```{}```",
                                         fc.id.0, fc.slogan
