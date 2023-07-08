@@ -187,7 +187,7 @@ pub async fn run(
                             response
                                 .kind(InteractionResponseType::ChannelMessageWithSource)
                                 .interaction_response_data(|message| {
-                                    message.embed(|e| e.title("Invalid world name!"))
+                                    message.embed(|e| e.title("invalid world name!"))
                                 })
                         })
                         .await

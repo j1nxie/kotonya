@@ -9,28 +9,20 @@ use xivapi::XivApi;
 
 mod commands;
 
-struct Handler;
+struct Handler {
+    api: XivApi,
+}
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
-        let api = match env::var("XIVAPI_TOKEN") {
-            Ok(t) => {
-                println!("running with a XIVAPI token!");
-                XivApi::with_key(t)
-            }
-            Err(_) => {
-                println!("running without a XIVAPI token!");
-                XivApi::new()
-            }
-        };
-
         if let Interaction::ApplicationCommand(command) = interaction {
             println!("received command interaction: {:#?}", command);
 
             if let Err(why) = match command.data.name.as_str() {
                 "ping" => commands::ping::run(&command, &ctx).await,
-                "character" => commands::character::run(&api, &command, &ctx).await,
+                "character" => commands::character::run(&self.api, &command, &ctx).await,
+                "freecompany" => commands::free_company::run(&self.api, &command, &ctx).await,
                 _ => Ok(()),
             } {
                 println!("cannot respond to slash command: {:#?}", why);
@@ -45,6 +37,7 @@ impl EventHandler for Handler {
             commands
                 .create_application_command(|command| commands::ping::register(command))
                 .create_application_command(|command| commands::character::register(command))
+                .create_application_command(|command| commands::free_company::register(command))
         })
         .await;
 
@@ -58,8 +51,19 @@ async fn main() {
     let discord_token =
         env::var("DISCORD_TOKEN").expect("expected a Discord token in the environment.");
 
+    let api = match env::var("XIVAPI_TOKEN") {
+        Ok(t) => {
+            println!("running with a XIVAPI token!");
+            XivApi::with_key(t)
+        }
+        Err(_) => {
+            println!("running without a XIVAPI token!");
+            XivApi::new()
+        }
+    };
+
     let mut client = Client::builder(discord_token, GatewayIntents::empty())
-        .event_handler(Handler)
+        .event_handler(Handler { api })
         .await
         .expect("error creating client.");
 
