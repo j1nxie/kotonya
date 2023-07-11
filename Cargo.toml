@@ -7,6 +7,6 @@ edition = "2021"
 
 [dependencies]
 dotenvy = "0.15.7"
-poise = "0.5.5"
+poise = { git = "https://github.com/serenity-rs/poise" }
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 xivapi = { git = "https://github.com/j1nxie/xivapi-rs", branch = "features/port-rust-2021" }
