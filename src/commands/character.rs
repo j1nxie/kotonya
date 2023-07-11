@@ -13,6 +13,7 @@ async fn return_embed(
     match response {
         Ok(r) => {
             let character = r.character.unwrap();
+            // TODO: reformat the embed so it's cleaner
             ctx.send(|b| {
                 b.embed(|e| {
                     e.title(character.name)
@@ -77,9 +78,11 @@ async fn return_embed(
 
 #[poise::command(slash_command, subcommands("name", "id"), subcommand_required)]
 pub async fn character(_: Context<'_>) -> Result<(), Error> {
+    // TODO: allow users to bind a character to their discord id
     Ok(())
 }
 
+/// fetch a character by their name and world.
 #[poise::command(slash_command)]
 pub async fn name(
     ctx: Context<'_>,
@@ -112,6 +115,7 @@ pub async fn name(
     Ok(())
 }
 
+/// fetch a character by their Lodestone ID.
 #[poise::command(slash_command)]
 pub async fn id(
     ctx: Context<'_>,
