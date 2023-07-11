@@ -1,6 +1,7 @@
 use dotenvy::dotenv;
 use poise::{serenity_prelude as serenity, FrameworkOptions};
 use std::env;
+use tracing::{error, info};
 use xivapi::XivApi;
 
 mod commands;
@@ -13,14 +14,16 @@ pub struct Data {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    dotenv().unwrap();
+    dotenv().expect("failed to load .env file.");
+    tracing_subscriber::fmt::init();
+
     let xivapi = match env::var("XIVAPI_TOKEN") {
         Ok(s) => {
-            println!("running with a XIVAPI token!");
+            info!("running with a XIVAPI token!");
             XivApi::with_key(s)
         }
         Err(_) => {
-            println!("running without a XIVAPI token!");
+            info!("running without a XIVAPI token!");
             XivApi::new()
         }
     };
@@ -37,12 +40,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     match error {
                         poise::FrameworkError::ArgumentParse { error, .. } => {
                             if let Some(e) = error.downcast_ref::<serenity::RoleParseError>() {
-                                println!("found a RoleParseError: {:#?}", e);
+                                error!("found a RoleParseError: {:#?}", e);
                             } else {
-                                println!("not a RoleParseError: {:#?}", error);
+                                error!("not a RoleParseError: {:#?}", error);
                             }
                         }
-                        other => poise::builtins::on_error(other).await.unwrap(),
+                        other => {
+                            if let Err(e) = poise::builtins::on_error(other).await {
+                                error!("fatal error: {}", e);
+                            }
+                        }
                     }
                 })
             },
