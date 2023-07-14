@@ -154,7 +154,7 @@ pub async fn action(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("achievement not found!")
+                e.title("action not found!")
                     .description("Kotonya couldn't find any actions with the specified name, nya!")
             })
         })
