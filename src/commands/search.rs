@@ -14,7 +14,7 @@ async fn paginate<U, E>(
     let next_button_id = format!("{}next", ctx.id());
 
     let mut current_page = 0;
-    let pages_vec = results.results.windows(5).collect::<Vec<_>>();
+    let pages_vec = results.results.chunks(5).collect::<Vec<_>>();
     let pages = pages_vec.as_slice();
 
     ctx.send(|b| {
