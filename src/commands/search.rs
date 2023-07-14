@@ -19,22 +19,24 @@ async fn paginate<U, E>(
 
     ctx.send(|b| {
         for result in pages[current_page] {
-            if let SearchModel::Achievement(a) = result {
-                b.embed(|f| {
-                    f.title(&a.metadata.name)
-                        .description(format!("ID: {}", &a.metadata.id))
-                        .thumbnail(format!("https://xivapi.com/{}", &a.metadata.icon))
-                })
-                .components(|b| {
-                    b.create_action_row(|b| {
-                        b.create_button(|b| b.custom_id(&prev_button_id).emoji('◀'))
-                            .create_button(|b| b.custom_id(&next_button_id).emoji('▶'))
-                    })
-                });
+            match result {
+                SearchModel::Achievement(a) | SearchModel::Action(a) => {
+                    b.embed(|f| {
+                        f.title(&a.name)
+                            .description(format!("ID: {}", &a.id))
+                            .thumbnail(format!("https://xivapi.com/{}", &a.icon))
+                    });
+                }
+                _ => todo!(),
             }
         }
 
-        b
+        b.components(|b| {
+            b.create_action_row(|b| {
+                b.create_button(|b| b.custom_id(&prev_button_id).emoji('◀'))
+                    .create_button(|b| b.custom_id(&next_button_id).emoji('▶'))
+            })
+        })
     })
     .await?;
 
@@ -59,15 +61,15 @@ async fn paginate<U, E>(
                 b.kind(serenity::InteractionResponseType::UpdateMessage)
                     .interaction_response_data(|b| {
                         for result in pages[current_page] {
-                            if let SearchModel::Achievement(a) = result {
-                                b.embed(|f| {
-                                    f.title(&a.metadata.name)
-                                        .description(format!("ID: {}", &a.metadata.id))
-                                        .thumbnail(format!(
-                                            "https://xivapi.com/{}",
-                                            &a.metadata.icon
-                                        ))
-                                });
+                            match result {
+                                SearchModel::Achievement(a) | SearchModel::Action(a) => {
+                                    b.embed(|f| {
+                                        f.title(&a.name)
+                                            .description(format!("ID: {}", &a.id))
+                                            .thumbnail(format!("https://xivapi.com/{}", &a.icon))
+                                    });
+                                }
+                                _ => todo!(),
                             }
                         }
 
@@ -80,7 +82,11 @@ async fn paginate<U, E>(
     Ok(())
 }
 
-#[poise::command(slash_command, subcommands("achievement"), subcommand_required)]
+#[poise::command(
+    slash_command,
+    subcommands("achievement", "action"),
+    subcommand_required
+)]
 pub async fn search(_: Context<'_>) -> Result<(), Error> {
     Ok(())
 }
@@ -116,9 +122,53 @@ pub async fn achievement(
             for result in &search_result.results {
                 if let SearchModel::Achievement(a) = result {
                     b.embed(|f| {
-                        f.title(&a.metadata.name)
-                            .description(format!("ID: {}", &a.metadata.id))
-                            .thumbnail(format!("https://xivapi.com/{}", &a.metadata.icon))
+                        f.title(&a.name)
+                            .description(format!("ID: {}", &a.id))
+                            .thumbnail(format!("https://xivapi.com/{}", &a.icon))
+                    });
+                }
+            }
+            b
+        })
+        .await?;
+    }
+
+    Ok(())
+}
+
+/// search for an in-game action.
+#[poise::command(slash_command)]
+pub async fn action(
+    ctx: Context<'_>,
+    #[description = "the action's name"] name: String,
+) -> Result<(), Error> {
+    let search_result = &ctx
+        .data()
+        .api
+        .search()
+        .string(&name)
+        .index(xivapi::models::search::Index::Action)
+        .send()
+        .await?;
+
+    if search_result.results.is_empty() {
+        ctx.send(|b| {
+            b.embed(|e| {
+                e.title("achievement not found!")
+                    .description("Kotonya couldn't find any actions with the specified name, nya!")
+            })
+        })
+        .await?;
+    } else if search_result.results.len() > 5 {
+        paginate(ctx, search_result).await?;
+    } else {
+        ctx.send(|b| {
+            for result in &search_result.results {
+                if let SearchModel::Action(a) = result {
+                    b.embed(|f| {
+                        f.title(&a.name)
+                            .description(format!("ID: {}", &a.id))
+                            .thumbnail(format!("https://xivapi.com/{}", &a.icon))
                     });
                 }
             }
