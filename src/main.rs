@@ -34,6 +34,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 commands::ping::ping(),
                 commands::character::character(),
                 commands::free_company::free_company(),
+                commands::search::search(),
             ],
             on_error: |error| {
                 Box::pin(async move {
