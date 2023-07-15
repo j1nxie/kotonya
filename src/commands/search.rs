@@ -249,7 +249,7 @@ pub async fn emote(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("emote not found!")
                     .description("Kotonya couldn't find any emotes with the specified name, nya!")
             })
         })
@@ -293,7 +293,7 @@ pub async fn enemy(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("enemy not found!")
                     .description("Kotonya couldn't find any enemies with the specified name, nya!")
             })
         })
@@ -337,7 +337,7 @@ pub async fn fate(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("fate not found!")
                     .description("Kotonya couldn't find any FATEs with the specified name, nya!")
             })
         })
@@ -367,7 +367,7 @@ pub async fn fate(
 #[poise::command(slash_command)]
 pub async fn instance_content(
     ctx: Context<'_>,
-    #[description = "the instance content's name"] name: String,
+    #[description = "the instanced content's name"] name: String,
 ) -> Result<(), Error> {
     let search_result = &ctx
         .data()
@@ -381,7 +381,7 @@ pub async fn instance_content(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!").description(
+                e.title("instanced content not found!").description(
                     "Kotonya couldn't find any instanced content with the specified name, nya!",
                 )
             })
@@ -426,7 +426,7 @@ pub async fn item(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("item not found!")
                     .description("Kotonya couldn't find any items with the specified name, nya!")
             })
         })
@@ -470,7 +470,7 @@ pub async fn leve(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("leve not found!")
                     .description("Kotonya couldn't find any leve with the specified name, nya!")
             })
         })
@@ -514,7 +514,7 @@ pub async fn minion(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("minion not found!")
                     .description("Kotonya couldn't find any minions with the specified name, nya!")
             })
         })
@@ -558,7 +558,7 @@ pub async fn mount(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("mount not found!")
                     .description("Kotonya couldn't find any mounts with the specified name, nya!")
             })
         })
@@ -602,7 +602,7 @@ pub async fn npc(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("NPC not found!")
                     .description("Kotonya couldn't find any NPCs with the specified name, nya!")
             })
         })
@@ -646,7 +646,7 @@ pub async fn place(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("place not found!")
                     .description("Kotonya couldn't find any places with the specified name, nya!")
             })
         })
@@ -690,7 +690,7 @@ pub async fn quest(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("quest not found!")
                     .description("Kotonya couldn't find any quests with the specified name, nya!")
             })
         })
@@ -734,7 +734,7 @@ pub async fn recipe(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("recipe not found!")
                     .description("Kotonya couldn't find any recipes with the specified name, nya!")
             })
         })
@@ -778,7 +778,7 @@ pub async fn status(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("status not found!")
                     .description("Kotonya couldn't find any statuses with the specified name, nya!")
             })
         })
@@ -822,7 +822,7 @@ pub async fn title(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("title not found!")
                     .description("Kotonya couldn't find any titles with the specified name, nya!")
             })
         })
@@ -866,7 +866,7 @@ pub async fn weather(
     if search_result.results.is_empty() {
         ctx.send(|b| {
             b.embed(|e| {
-                e.title("action not found!")
+                e.title("weather not found!")
                     .description("Kotonya couldn't find any weathers with the specified name, nya!")
             })
         })
