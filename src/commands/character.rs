@@ -129,10 +129,12 @@ pub async fn link(
                     if r.results.is_empty() {
                         ctx.send(|b| {
                             b.embed(|e| {
-                                e.title("couldn't find your character!")
-                                .description("Kotonya couldn't find a character with the specified name, nya!")
+                                e.title("couldn't find your character!").description(
+                                    "Kotonya couldn't find a character with the given name, nya!",
+                                )
                             })
-                        }).await?;
+                        })
+                        .await?;
 
                         return Ok(());
                     }
@@ -242,9 +244,10 @@ pub async fn id(
     ctx: Context<'_>,
     #[description = "the character's Lodestone ID"] id: String,
 ) -> Result<(), Error> {
+    let api = &ctx.data().api;
+
     ctx.defer().await?;
 
-    let api = &ctx.data().api;
     let response = api
         .character(id.parse::<u64>().unwrap().into())
         .send()

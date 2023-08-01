@@ -148,6 +148,8 @@ pub async fn achievement(
     ctx: Context<'_>,
     #[description = "the achievement's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -193,6 +195,8 @@ pub async fn action(
     ctx: Context<'_>,
     #[description = "the action's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -237,6 +241,8 @@ pub async fn emote(
     ctx: Context<'_>,
     #[description = "the emote's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -281,6 +287,8 @@ pub async fn enemy(
     ctx: Context<'_>,
     #[description = "the action's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -325,6 +333,8 @@ pub async fn fate(
     ctx: Context<'_>,
     #[description = "the FATE's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -369,6 +379,8 @@ pub async fn instance_content(
     ctx: Context<'_>,
     #[description = "the instanced content's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -414,6 +426,8 @@ pub async fn item(
     ctx: Context<'_>,
     #[description = "the item's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -458,6 +472,8 @@ pub async fn leve(
     ctx: Context<'_>,
     #[description = "the leve's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -502,6 +518,8 @@ pub async fn minion(
     ctx: Context<'_>,
     #[description = "the minion's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -546,6 +564,8 @@ pub async fn mount(
     ctx: Context<'_>,
     #[description = "the mount's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -590,6 +610,8 @@ pub async fn npc(
     ctx: Context<'_>,
     #[description = "the NPC's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -634,6 +656,8 @@ pub async fn place(
     ctx: Context<'_>,
     #[description = "the place's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -678,6 +702,8 @@ pub async fn quest(
     ctx: Context<'_>,
     #[description = "the quest's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -722,6 +748,8 @@ pub async fn recipe(
     ctx: Context<'_>,
     #[description = "the recipe's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -766,6 +794,8 @@ pub async fn status(
     ctx: Context<'_>,
     #[description = "the status's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -810,6 +840,8 @@ pub async fn title(
     ctx: Context<'_>,
     #[description = "the title's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api
@@ -854,6 +886,8 @@ pub async fn weather(
     ctx: Context<'_>,
     #[description = "the weather's name"] name: String,
 ) -> Result<(), Error> {
+    ctx.defer().await?;
+
     let search_result = &ctx
         .data()
         .api

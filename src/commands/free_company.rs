@@ -70,6 +70,9 @@ pub async fn name(
 ) -> Result<(), Error> {
     let api = &ctx.data().api;
     let world = World::from_str(&world);
+
+    ctx.defer().await?;
+
     match world {
         Ok(w) => {
             let response = api
@@ -101,6 +104,9 @@ pub async fn id(
     #[description = "the free company's Lodestone ID"] id: String,
 ) -> Result<(), Error> {
     let api = &ctx.data().api;
+
+    ctx.defer().await?;
+
     let response = api
         .free_company(id.parse::<u64>().unwrap().into())
         .send()
