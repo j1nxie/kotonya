@@ -193,7 +193,7 @@ pub async fn _self(ctx: Context<'_>) -> Result<(), Error> {
         }
         Err(_) => {
             ctx.send(|b| b.embed(|e| e
-                .title("error fetching your character!")
+                .title("couldn't fetch your character!")
                 .description("you don't have a character linked to your Discord account. please use `/link <name/id>` to link your character!"))
             ).await?;
         }
