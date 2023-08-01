@@ -39,6 +39,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             commands: vec![
                 commands::ping::ping(),
                 commands::character::character(),
+                commands::character::link(),
                 commands::free_company::free_company(),
                 commands::search::search(),
             ],
