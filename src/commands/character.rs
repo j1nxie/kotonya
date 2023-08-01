@@ -1,7 +1,8 @@
 use crate::{Context, Error};
+use redis::{AsyncCommands, RedisError};
 use std::str::FromStr;
 use xivapi::{
-    models::character::CharacterResult,
+    models::character::{CharacterResult, Gender},
     prelude::{Builder, World},
 };
 
@@ -13,10 +14,23 @@ async fn return_embed(
     match response {
         Ok(r) => {
             let character = r.character.unwrap();
-            // TODO: reformat the embed so it's cleaner
+            let title = match &character.free_company_name {
+                Some(t) => format!(
+                    "[{}] {} «{}»",
+                    character.active_class_job.unlocked_state.name, character.name, t
+                ),
+                None => format!(
+                    "[{}] {}",
+                    character.active_class_job.unlocked_state.name, character.name
+                ),
+            };
+
+            // TODO: implement fc tag for character, currently displaying fc name as placeholder.
+            // TODO: implement Display for tribe and race.
+            // TODO: further cleanup the embed.
             ctx.send(|b| {
                 b.embed(|e| {
-                    e.title(character.name)
+                    e.title(title)
                         .description(format!(
                             "Lodestone ID: `{:?}`\n```{}```",
                             character.id.0, character.bio
@@ -26,35 +40,17 @@ async fn return_embed(
                             character.id.0
                         ))
                         .thumbnail(character.avatar)
-                        .field("job", character.active_class_job.unlocked_state.name, true)
-                        .field("", "", true)
                         .field(
-                            "race | tribe | gender",
+                            "information",
                             format!(
-                                "{:?}\n{:?} | {:?}",
-                                character.race, character.tribe, character.gender
+                                "{:?} {:?}\n{:?}",
+                                character.tribe, character.race, character.gender
                             ),
                             true,
                         )
                         .field("city-state", format!("{:?}", character.town), true)
-                        .field("", "", true)
-                        .field("guardian", format!("{:?}", character.guardian_deity), true)
-                        .field(
-                            "server",
-                            format!("{} | {}", character.dc, character.world),
-                            true,
-                        )
-                        .field("", "", true)
-                        .field(
-                            "free company",
-                            if let Some(fc_name) = character.free_company_name {
-                                fc_name
-                            } else {
-                                String::from("None")
-                            },
-                            true,
-                        )
                         .field("nameday", character.nameday, false)
+                        .footer(|f| f.text(format!("world: {}", character.world)))
                 })
             })
             .await?;
@@ -76,9 +72,131 @@ async fn return_embed(
     Ok(())
 }
 
-#[poise::command(slash_command, subcommands("name", "id"), subcommand_required)]
+/// link your character to Kotonya.
+#[poise::command(slash_command)]
+pub async fn link(
+    ctx: Context<'_>,
+    #[description = "your character name or lodestone id"] input: String,
+) -> Result<(), Error> {
+    let api = &ctx.data().api;
+    let con = &mut ctx.data().client.get_async_connection().await?;
+
+    ctx.defer().await?;
+
+    match input.parse::<u64>() {
+        Ok(t) => {
+            let response = api.character(t.into()).send().await;
+
+            match response {
+                Ok(r) => {
+                    let character = r.character.unwrap();
+
+                    con.set(&ctx.author().id.to_string(), character.id.to_string())
+                        .await?;
+
+                    ctx.send(|b| {
+                        b.embed(|e| {
+                            e.title("link successful!").description(format!(
+                                "successfully linked `{}` with `{}`!",
+                                ctx.author().name,
+                                character.name,
+                            ))
+                        })
+                    })
+                    .await?;
+                }
+
+                Err(_) => {
+                    ctx.send(|b| {
+                        b.embed(|e| {
+                            e.title("couldn't find your character!").description(
+                                "Kotonya couldn't find a character with the given ID, nya!",
+                            )
+                        })
+                    })
+                    .await?;
+                }
+            }
+        }
+
+        Err(_) => {
+            let response = api.character_search().name(&input).send().await;
+
+            match response {
+                Ok(r) => {
+                    if r.results.is_empty() {
+                        ctx.send(|b| {
+                            b.embed(|e| {
+                                e.title("couldn't find your character!").description(
+                                    "Kotonya couldn't find a character with the given name, nya!",
+                                )
+                            })
+                        })
+                        .await?;
+
+                        return Ok(());
+                    }
+
+                    let id = r.results[0].id;
+                    let character = api.character(id.into()).send().await?.character.unwrap();
+
+                    con.set(&ctx.author().id.to_string(), character.id.to_string())
+                        .await?;
+
+                    ctx.send(|b| {
+                        b.embed(|e| {
+                            e.title("link successful!").description(format!(
+                                "successfully linked `{}` with `{}`!",
+                                ctx.author().name,
+                                character.name,
+                            ))
+                        })
+                    })
+                    .await?;
+                }
+
+                Err(e) => {
+                    ctx.send(|b| {
+                        b.embed(|em| em.title("xivapi error!").description(format!("{:#?}", e)))
+                    })
+                    .await?;
+                }
+            }
+        }
+    }
+
+    Ok(())
+}
+
+#[poise::command(slash_command, subcommands("name", "id", "_self"), subcommand_required)]
 pub async fn character(_: Context<'_>) -> Result<(), Error> {
-    // TODO: allow users to bind a character to their discord id
+    Ok(())
+}
+
+/// fetch your linked character.
+#[poise::command(slash_command, rename = "self")]
+pub async fn _self(ctx: Context<'_>) -> Result<(), Error> {
+    let id = &ctx.author().id.to_string();
+    let con = &mut ctx.data().client.get_async_connection().await?;
+    let result: Result<String, RedisError> = con.get(id).await;
+
+    ctx.defer().await?;
+
+    match result {
+        Ok(t) => {
+            let api = &ctx.data().api;
+            let response = api.character(t.parse::<u64>().unwrap().into()).send().await;
+
+            return_embed("ID", response, &ctx).await?;
+        }
+        Err(_) => {
+            ctx.send(|b| b.embed(|e| e
+                .title("couldn't fetch your character!")
+                .description("you don't have a character linked to your Discord account. please use `/link <name/id>` to link your character!"))
+            ).await?;
+        }
+    }
+
     Ok(())
 }
 
@@ -91,6 +209,9 @@ pub async fn name(
 ) -> Result<(), Error> {
     let api = &ctx.data().api;
     let world = World::from_str(&world);
+
+    ctx.defer().await?;
+
     match world {
         Ok(w) => {
             let response = api
@@ -122,6 +243,9 @@ pub async fn id(
     #[description = "the character's Lodestone ID"] id: String,
 ) -> Result<(), Error> {
     let api = &ctx.data().api;
+
+    ctx.defer().await?;
+
     let response = api
         .character(id.parse::<u64>().unwrap().into())
         .send()
