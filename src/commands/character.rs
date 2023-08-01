@@ -2,7 +2,7 @@ use crate::{Context, Error};
 use redis::{AsyncCommands, RedisError};
 use std::str::FromStr;
 use xivapi::{
-    models::character::CharacterResult,
+    models::character::{CharacterResult, Gender},
     prelude::{Builder, World},
 };
 
@@ -14,10 +14,23 @@ async fn return_embed(
     match response {
         Ok(r) => {
             let character = r.character.unwrap();
-            // TODO: reformat the embed so it's cleaner
+            let title = match &character.free_company_name {
+                Some(t) => format!(
+                    "[{}] {} «{}»",
+                    character.active_class_job.unlocked_state.name, character.name, t
+                ),
+                None => format!(
+                    "[{}] {}",
+                    character.active_class_job.unlocked_state.name, character.name
+                ),
+            };
+
+            // TODO: implement fc tag for character, currently displaying fc name as placeholder.
+            // TODO: implement Display for tribe and race.
+            // TODO: further cleanup the embed.
             ctx.send(|b| {
                 b.embed(|e| {
-                    e.title(character.name)
+                    e.title(title)
                         .description(format!(
                             "Lodestone ID: `{:?}`\n```{}```",
                             character.id.0, character.bio
@@ -27,32 +40,17 @@ async fn return_embed(
                             character.id.0
                         ))
                         .thumbnail(character.avatar)
-                        .field("job", character.active_class_job.unlocked_state.name, true)
                         .field(
-                            "race | tribe | gender",
+                            "information",
                             format!(
-                                "{:?}\n{:?} | {:?}",
-                                character.race, character.tribe, character.gender
+                                "{:?} {:?}\n{:?}",
+                                character.tribe, character.race, character.gender
                             ),
                             true,
                         )
                         .field("city-state", format!("{:?}", character.town), true)
-                        .field("guardian", format!("{:?}", character.guardian_deity), true)
-                        .field(
-                            "server",
-                            format!("{} | {}", character.dc, character.world),
-                            true,
-                        )
-                        .field(
-                            "free company",
-                            if let Some(fc_name) = character.free_company_name {
-                                fc_name
-                            } else {
-                                String::from("None")
-                            },
-                            true,
-                        )
                         .field("nameday", character.nameday, false)
+                        .footer(|f| f.text(format!("world: {}", character.world)))
                 })
             })
             .await?;
