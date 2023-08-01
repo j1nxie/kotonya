@@ -2,7 +2,7 @@ use crate::{Context, Error};
 use redis::{AsyncCommands, RedisError};
 use std::str::FromStr;
 use xivapi::{
-    models::character::{CharacterResult, Gender},
+    models::character::CharacterResult,
     prelude::{Builder, World},
 };
 
