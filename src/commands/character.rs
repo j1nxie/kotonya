@@ -27,7 +27,6 @@ async fn return_embed(
                         ))
                         .thumbnail(character.avatar)
                         .field("job", character.active_class_job.unlocked_state.name, true)
-                        .field("", "", true)
                         .field(
                             "race | tribe | gender",
                             format!(
@@ -37,14 +36,12 @@ async fn return_embed(
                             true,
                         )
                         .field("city-state", format!("{:?}", character.town), true)
-                        .field("", "", true)
                         .field("guardian", format!("{:?}", character.guardian_deity), true)
                         .field(
                             "server",
                             format!("{} | {}", character.dc, character.world),
                             true,
                         )
-                        .field("", "", true)
                         .field(
                             "free company",
                             if let Some(fc_name) = character.free_company_name {
