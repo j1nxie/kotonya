@@ -1,4 +1,5 @@
 use crate::{Context, Error};
+use redis::{AsyncCommands, RedisError};
 use std::str::FromStr;
 use xivapi::{
     models::free_company::FreeCompanyResult,
@@ -52,15 +53,69 @@ async fn return_embed(
 #[poise::command(
     rename = "freecompany",
     slash_command,
-    subcommands("name", "id"),
+    subcommands("name", "id", "_self"),
     subcommand_required
 )]
 pub async fn free_company(_: Context<'_>) -> Result<(), Error> {
-    // TODO: allow users to bind a character to their discord id
     Ok(())
 }
 
-// FIXME: for some reason this is probably timing out.
+/// fetch your linked character's free company.
+#[poise::command(rename = "self", slash_command)]
+pub async fn _self(ctx: Context<'_>) -> Result<(), Error> {
+    let id = &ctx.author().id.to_string();
+    let con = &mut ctx.data().client.get_async_connection().await?;
+    let result: Result<String, RedisError> = con.get(id).await;
+
+    ctx.defer().await?;
+
+    match result {
+        Ok(t) => {
+            let api = &ctx.data().api;
+            let response = api.character(t.parse::<u64>().unwrap().into()).send().await;
+
+            match response {
+                Ok(r) => {
+                    let fc = r.character.unwrap().free_company_id;
+
+                    match fc {
+                        Some(f) => {
+                            let response = api.free_company(f).send().await;
+
+                            return_embed("ID", response, &ctx).await?;
+                        }
+
+                        None => {
+                            ctx.send(|b| {
+                                b.embed(|e| {
+                                    e.title("couldn't fetch your free company!").description(
+                                        "your linked character is currently not in a free company!",
+                                    )
+                                })
+                            })
+                            .await?;
+                        }
+                    }
+                }
+                Err(e) => {
+                    ctx.send(|b| {
+                        b.embed(|em| em.title("xivapi error!").description(format!("{:#?}", e)))
+                    })
+                    .await?;
+                }
+            }
+        }
+        Err(_) => {
+            ctx.send(|b| b.embed(|e| e
+                .title("couldn't fetch your free company!")
+                .description("you don't have a character linked to your Discord account. please use `/link <name/id>` to link your character!"))
+            ).await?;
+        }
+    }
+
+    Ok(())
+}
+
 /// fetch a free company by its name and world.
 #[poise::command(slash_command)]
 pub async fn name(
