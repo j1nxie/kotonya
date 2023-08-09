@@ -2136,7 +2136,7 @@ dependencies = [
 [[package]]
 name = "xivapi"
 version = "0.1.0"
-source = "git+https://github.com/j1nxie/xivapi-rs?branch=features/port-rust-2021#c91b5b77581bf9e5c623fff6d7d1b8ee0a7b48e8"
+source = "git+https://github.com/j1nxie/xivapi-rs?branch=master#a91f8c7fb033c547137d6cb148f35f1f1f0da980"
 dependencies = [
  "anyhow",
  "async-trait",

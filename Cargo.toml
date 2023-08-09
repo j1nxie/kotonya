@@ -12,4 +12,4 @@ redis = { version = "0.23.0", features = ["tokio-comp"] }
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 tracing = "0.1.37"
 tracing-subscriber = "0.3.17"
-xivapi = { git = "https://github.com/j1nxie/xivapi-rs", branch = "features/port-rust-2021" }
+xivapi = { git = "https://github.com/j1nxie/xivapi-rs", branch = "master" }
